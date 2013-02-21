@@ -12,13 +12,16 @@ $ftypes = array(
 function getSql($fname){
   global $ftypes;
   $table = str_ireplace(".dbf","",$fname);
-  
+  //if($table!='DOMA') return;
+  $fp = fopen(__DIR__.'/'.$table.'.my.sql','w+');
+  echo "opened $fp\n";
+  if(!$fp) die("$table cant write");
   $db = dbase_open($fname, 0);
-  
+  fwrite($fp, "set names utf8;");
   if ($db) {
     $record_numbers = dbase_numrecords($db);
     
-    echo "/*NUM: $record_numbers*/\n";
+     fwrite($fp, "/*NUM: $record_numbers*/\n");
  //   var_dump(dbase_get_header_info($db));
     $headers = dbase_get_header_info($db);
     $fields = array();
@@ -31,37 +34,37 @@ function getSql($fname){
       $names[] = "kladr_{$header['name']}";
   
     }
-    echo "create table $table ( ".implode(", ",$fields)." )default charset=utf8 engine=innodb;\n";
-    echo " /* DATA START */ \n"; 
+     fwrite($fp, "create table $table ( ".implode(", ",$fields)." )default charset=utf8 engine=innodb;\n");
+     fwrite($fp, " /* DATA START */ \n");
 
-    echo "insert into $table (".implode(',',$names).") VALUES ";
+     fwrite($fp, "insert into $table (".implode(',',$names).") VALUES ");
 
     for ($i = 1; $i <= $record_numbers; $i++) {
-      if($i>1) echo ",";
+      if($i>1)  fwrite($fp, ",");
       $row = dbase_get_record($db, $i);
       $fvals = array();
       unset($row['deleted']);
       $l = count($row);
-      echo "(";
+       fwrite($fp, "(");
       for($ii =0 ; $ii<$l ; $ii++)
       {
-        if($ii >0 ) echo " , ";
+        if($ii >0 )  fwrite($fp, " , ");
         $val = trim(iconv('cp866','utf-8',$row[$ii]));
-        echo "'$val'"; 
+         fwrite($fp, "'$val'");
       }
-      echo ")\n";
+       fwrite($fp, ")\n");
 
     }
-    echo ";\n";
-  
+     fwrite($fp, ";\n");
+   fclose($fp);
   }else{
     die("can not open $fname\n");
   }
 }
 $a = glob('*.DBF');
-echo "SET NAMES utf8;\n";
+ echo  "SET NAMES utf8;\n";
 foreach($a as $f)
 {
-  echo " /** DUMPING $f **/\n\n";
+   echo( " /** DUMPING $f **/\n\n");
   getSql($f);
 }

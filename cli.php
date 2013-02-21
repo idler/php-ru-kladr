@@ -1,10 +1,12 @@
+#!/usr/bin/env php
 <?php
 $query = $argv[1];
 require_once('address.php');
 
-$db = new mysqli('localhost','root','');
+$db = new mysqli('localhost','max','');
 echo $db->connect_error,"\n\n";
-$db->select_db('addr2');
+$db->select_db('kladr');
+$db->query('set names utf8');
 
 $result = null;
 

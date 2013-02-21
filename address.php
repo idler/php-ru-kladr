@@ -72,7 +72,7 @@ SQL;
     order by strength desc , kladr_name asc
 SQL;
     $result = $dbh->query($sql);
-    var_dump($result);
+
   $retArr = array();
   while ($row = $result->fetch_assoc())
   {
@@ -90,7 +90,7 @@ SQL;
 SQL;
 
     $result = $dbh->query($sql);
-    var_dump($sql);
+
 
   $retArr = array();
   while ($row = $result->fetch_assoc())
