@@ -19,40 +19,89 @@ class AddressHelper
 {
   public static function findCity($dbh,$query)
   {
-    
+
     $sql = <<<SQL
-    
-select 
+
+select
     lower(m.kladr_name) like '$query%' as strength,
     m.kladr_code as code,
     m.kladr_name as name,
     m.kladr_socr as socr,
     c.kladr_code as ccod,
-    c.kladr_name as cname, 
+    c.kladr_name as cname,
     c.kladr_socr as cs,
     r.kladr_code as rcod,
     r.kladr_name as region,
-    r.kladr_socr as rs, 
+    r.kladr_socr as rs,
     s.kladr_code as scod,
-    s.kladr_name as subject , 
+    s.kladr_name as subject ,
     s.kladr_socr as ss
-    
+
     from KLADR m
     inner join KLADR c on c.kladr_code=concat(substr(m.kladr_code,1,9),'0000')
-    inner join KLADR r on r.kladr_code=concat(substr(m.kladr_code,1,6),'0000000') 
-    inner join KLADR s on s.kladr_code=concat(substr(m.kladr_code,1,3),'0000000000') 
-    where 
+    inner join KLADR r on r.kladr_code=concat(substr(m.kladr_code,1,6),'0000000')
+    inner join KLADR s on s.kladr_code=concat(substr(m.kladr_code,1,3),'0000000000')
+    where
     lower(m.kladr_name) like lower('%$query%') and m.kladr_socr <> 'обл' and m.kladr_socr <> 'р-н' and m.kladr_socr <> 'Респ'
 
     order by strength desc, substr(m.kladr_code,4,3) asc, substr(m.kladr_code,9) asc
     limit 15;
-    
+
 SQL;
-    
+
+    if(isset($_GET['debug']) )var_dump($sql);
     $result = $dbh->query($sql);
-    
-    $retArr = array(); 
-        /* извлечение ассоциативного массива */
+
+    $retArr = array();
+    /* извлечение ассоциативного массива */
+    while ($row = $result->fetch_assoc()) {
+      $retArr[] = $row;
+    }
+    return $retArr;
+  }
+
+  public static function findCityByRegion($dbh,$query,$inRegion)
+  {
+    $inRegion = ''.intval($inRegion);
+    if($inRegion === '770'){
+      $regionSqlString = "s.kladr_code like '770%' or s.kladr_code like '500%'";
+    }else if($inRegion === '780'){
+      $regionSqlString = "s.kladr_code like '780%' or s.kladr_code like '470%'";
+    }else{
+      $regionSqlString = "s.kladr_code like '$inRegion%' ";
+    }
+
+    $sql = <<<SQL
+
+select
+    lower(m.kladr_name) like '$query%' as strength,
+    m.kladr_code as code,    m.kladr_name as name,    m.kladr_socr as socr,    c.kladr_code as id,
+    c.kladr_name as cname,     c.kladr_socr as cs,
+    r.kladr_code as rcod,    r.kladr_name as region,    r.kladr_socr as rs,
+    s.kladr_code as scod,    s.kladr_name as subject ,     s.kladr_socr as ss
+
+    from KLADR m
+    inner join KLADR c on c.kladr_code=concat(substr(m.kladr_code,1,9),'0000')
+    inner join KLADR r on r.kladr_code=concat(substr(m.kladr_code,1,6),'0000000')
+    inner join KLADR s on s.kladr_code=concat(substr(m.kladr_code,1,3),'0000000000')
+    where
+    lower(m.kladr_name) like lower('%$query%')
+	and m.kladr_socr <> 'обл'
+	and m.kladr_socr <> 'р-н'
+	and m.kladr_socr <> 'Респ'
+and ($regionSqlString)
+
+    order by strength desc, substr(m.kladr_code,4,3) asc, substr(m.kladr_code,9) asc
+    limit 15;
+
+
+SQL;
+if(isset($_GET['debug']) )var_dump($sql);
+
+    $result = $dbh->query($sql);
+
+    $retArr = array();
+    /* извлечение ассоциативного массива */
     while ($row = $result->fetch_assoc()) {
       $retArr[] = $row;
     }
@@ -71,6 +120,8 @@ SQL;
     where kladr_code like '{$city_code}%' and lower(kladr_name) like lower('%$query%') 
     order by strength desc , kladr_name asc
 SQL;
+
+       if(isset($_GET['debug']) )var_dump($sql);
     $result = $dbh->query($sql);
 
   $retArr = array();
@@ -89,6 +140,7 @@ SQL;
    select kladr_name as name , kladr_code as code, kladr_index as `index` from DOMA where kladr_code like '$street_code%'
 SQL;
 
+    if(isset($_GET['debug']) )var_dump($sql);
     $result = $dbh->query($sql);
 
 
