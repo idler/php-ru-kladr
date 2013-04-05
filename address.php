@@ -62,7 +62,7 @@ SQL;
 
   public static function findCityByRegion($dbh,$query,$inRegion)
   {
-    $inRegion = ''.intval($inRegion);
+    $inRegion = sprintf("%03d",intval($inRegion));
     if($inRegion === '770'){
       $regionSqlString = "s.kladr_code like '770%' or s.kladr_code like '500%'";
     }else if($inRegion === '780'){
@@ -112,7 +112,7 @@ if(isset($_GET['debug']) )var_dump($sql);
   {
     if(12  < strlen($city_code))
     {
-       $city_code = substr($city_code,0,12);
+       $city_code = substr($city_code,0,11);
     }
 
     $sql = <<<SQL
